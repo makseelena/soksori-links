@@ -1,34 +1,100 @@
-<!doctype html>
-<html lang="ru">
-<head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>Soksori local</title>
-<style>body{font-family:Arial,sans-serif;background:#faf9f7;padding:30px;text-align:center} .btn{display:block;margin:10px auto;padding:12px 18px;width:260px;border-radius:10px;text-decoration:none;color:#fff} .spotify{background:#1DB954} .apple{background:#000} .youtube{background:#FF0000} .yandex{background:#ffd400;color:#222}</style>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Soksori Links</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background: #faf9f7;
+      padding: 40px;
+    }
+    h1 {
+      color: #c94d4d;
+    }
+    a {
+      display: block;
+      margin: 10px auto;
+      padding: 12px 20px;
+      width: 250px;
+      border-radius: 8px;
+      text-decoration: none;
+      color: #d6336c;
+      background: #fff5f5;
+      border: 1px solid #ffd6d6;
+      font-weight: bold;
+    }
+    a:hover {
+      background: #ffeaea;
+    }
+  </style>
 </head>
 <body>
-  <h1 id="title">Тест</h1>
+  <h1 id="title">Loading...</h1>
   <div id="links"></div>
-<script>
-const DB = {
-  "soksori001": {
-    title: "Postcard-vinil_Norah_Jones–Don’t_Know_Why",
-    spotify: "https://open.spotify.com/track/1zNXF2svmdlNxfS5XeNUgr?si=b57f97c40c914a3e",
-    apple: "https://music.apple.com/ru/song/dont-know-why/716690501",
-    youtube: "https://music.youtube.com/watch?v=GtOcxj3NDBI&si=6CPyIihCNXZtpiCK",
-    yandex: "https://music.yandex.ru/track/96294?utm_source=web&utm_medium=copy_link"
-  }
-};
-const slug = (new URLSearchParams(window.location.search)).get('slug') || 'soksori001';
-const rec = DB[slug];
-if(!rec){ document.getElementById('title').innerText='Не найдено'; }
-else{
-  document.getElementById('title').innerText = rec.title;
-  const links = document.getElementById('links');
-  [['spotify','Spotify','spotify'],['apple','Apple Music','apple'],['youtube','YouTube','youtube'],['yandex','Yandex Music','yandex']].forEach(([k,label,cls])=>{
-    if(rec[k]){
-      const a=document.createElement('a'); a.href=rec[k]; a.target='_blank'; a.className='btn '+cls; a.textContent=label; links.appendChild(a);
-    }
-  });
-}
-</script>
+
+  <script>
+    const response = await fetch('https://docs.google.com/spreadsheets/d/e/2PACX-1vSLRkmhqjKq88NMj7k40gs6M_-cVtr0udNcCLoOfdEw0lb1T-NxyHC6PgW3UO6plZSQ_KmDAazw-WkZ/pub?gid=0&single=true&output=csv');
+    const text = await response.text();
+
+    const sheetCsvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSLRkmhqjKq88NMj7k40gs6M_-cVtr0udNcCLoOfdEw0lb1T-NxyHC6PgW3UO6plZSQ_KmDAazw-WkZ/pub?gid=0&single=true&output=csv';
+
+    const params = new URLSearchParams(window.location.search);
+    const slug = params.get('slug');
+
+    fetch(sheetCsvUrl)
+      .then(response => response.text())
+      .then(csv => {
+        const rows = csv.split('\n').map(r => r.trim().split(','));
+        const headers = rows[0];
+        const data = rows.slice(1);
+        const slugIndex = headers.indexOf('slug');
+        const titleIndex = headers.indexOf('title');
+
+        const target = rows.find(r => r[slugIndex] === slug);
+
+        if (target) {
+          const titleIndex = headers.indexOf('title');
+          document.getElementById('title').innerText = target[titleIndex];
+
+          const linksDiv = document.getElementById('links');
+          const platforms = ['spotify', 'apple', 'youtube', 'yandex'];
+
+          platforms.forEach(name => {
+            const index = headers.indexOf(name);
+            const url = target[index];
+            if (url && url.startsWith('http')) {
+              const link = document.createElement('a');
+              link.href = url;
+              link.target = '_blank';
+              link.textContent = name.toUpperCase();
+              linksDiv.appendChild(link);
+            }
+          headers.forEach((header, i) => {
+      if (header !== 'slug' && header !== 'title' && target[i]) {
+        const a = document.createElement('a');
+        a.href = target[i];
+        a.target = '_blank';
+        a.textContent = header.toUpperCase();
+        a.style.display = 'block';
+        a.style.margin = '10px 0';
+        a.style.padding = '12px';
+        a.style.background = '#ffeaea';
+        a.style.borderRadius = '8px';
+        a.style.textDecoration = 'none';
+        a.style.color = '#d6336c';
+        linksDiv.appendChild(a);
+      }
+          });
+        } else {
+          document.getElementById('title').innerText = 'Not found 😢';
+        }
+      })
+      .catch(() => {
+        document.getElementById('title').innerText = 'Error loading data';
+      });
+  </script>
 </body>
 </html>
-
