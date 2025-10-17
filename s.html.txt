@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Soksori — Local Test</title>
+<style>
+  body{font-family:Arial,Helvetica,sans-serif;background:#faf9f7;color:#111;padding:30px;text-align:center}
+  .card{max-width:640px;margin:0 auto;background:#fff;padding:24px;border-radius:12px;box-shadow:0 6px 18px rgba(0,0,0,0.06)}
+  h1{color:#c94d4d;margin:0 0 8px}
+  .info{color:#666;margin-bottom:12px}
+  .btn{display:block;margin:10px auto;padding:12px 18px;width:280px;border-radius:10px;text-decoration:none;color:#fff;font-weight:700}
+  .spotify{background:#1DB954}
+  .apple{background:#000}
+  .youtube{background:#FF0000}
+  .yandex{background:#ffd400;color:#222}
+</style>
+</head>
+<body>
+  <div class="card">
+    <h1 id="title">Soksori — тест</h1>
+    <div class="info" id="info">Здесь будут кнопки</div>
+    <div id="links"></div>
+    <div style="margin-top:14px;color:#999;font-size:13px">Открой URL с параметром <b>?slug=soksori001</b></div>
+  </div>
+
+<script>
+/* ЛОКАЛЬНЫЕ ДАННЫЕ — ничего не загружаем извне */
+const DB = {
+  "soksori001": {
+    title: "Postcard-vinil_Norah_Jones–Don’t_Know_Why",
+    spotify: "https://open.spotify.com/track/1zNXF2svmdlNxfS5XeNUgr?si=b57f97c40c914a3e",
+    apple: "https://music.apple.com/ru/song/dont-know-why/716690501",
+    youtube: "https://music.youtube.com/watch?v=GtOcxj3NDBI&si=6CPyIihCNXZtpiCK",
+    yandex: "https://music.yandex.ru/track/96294?utm_source=web&utm_medium=copy_link"
+  }
+};
+
+const params = new URLSearchParams(window.location.search);
+const slug = (params.get('slug') || '').trim();
+
+function showError(text){
+  document.getElementById('title').innerText = 'Ошибка';
+  document.getElementById('info').innerText = text;
+  document.getElementById('links').innerHTML = '';
+}
+
+if(!slug){
+  showError('Добавь ?slug=soksori001 в конец URL (пример: /s.html?slug=soksori001)');
+} else {
+  const rec = DB[slug];
+  if(!rec){ showError(`Текущий slug "${slug}" не найден в локальной базе`); }
+  else {
+    document.getElementById('title').innerText = rec.title;
+    document.getElementById('info').innerText = 'Нажми на платформу';
+    const links = document.getElementById('links');
+    const map = [
+      ['spotify','Spotify','spotify'],
+      ['apple','Apple Music','apple'],
+      ['youtube','YouTube','youtube'],
+      ['yandex','Yandex Music','yandex']
+    ];
+    map.forEach(([k,label,cls])=>{
+      if(rec[k]){
+        const a = document.createElement('a');
+        a.href = rec[k];
+        a.target = '_blank';
+        a.rel = 'noopener';
+        a.className = 'btn ' + cls;
+        a.textContent = label;
+        links.appendChild(a);
+      }
+    });
+  }
+}
+</script>
+</body>
+</html>
